@@ -1,0 +1,972 @@
+<!doctype html>
+<html lang="ru" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UstaTap</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&amp;family=Nunito+Sans:wght@400;600;700&amp;display=swap" rel="stylesheet">
+  <style>
+html, body { height: 100%; margin: 0; }
+* { box-sizing: border-box; }
+body { font-family: 'Nunito Sans', sans-serif; }
+.font-display { font-family: 'Unbounded', sans-serif; }
+
+@keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+@keyframes fadeUp { from{opacity:0;transform:translateY(30px)} to{opacity:1;transform:translateY(0)} }
+@keyframes scaleIn { from{opacity:0;transform:scale(0.85)} to{opacity:1;transform:scale(1)} }
+@keyframes slideLeft { from{opacity:0;transform:translateX(40px)} to{opacity:1;transform:translateX(0)} }
+@keyframes pulse-glow { 0%,100%{box-shadow:0 0 20px rgba(255,107,53,0.3)} 50%{box-shadow:0 0 40px rgba(255,107,53,0.6)} }
+
+.anim-float { animation: float 4s ease-in-out infinite; }
+.anim-fade { opacity:0; animation: fadeUp 0.7s ease forwards; }
+.anim-scale { opacity:0; animation: scaleIn 0.5s ease forwards; }
+.anim-slide { opacity:0; animation: slideLeft 0.6s ease forwards; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+.delay-5 { animation-delay: 0.5s; }
+.delay-6 { animation-delay: 0.6s; }
+.delay-7 { animation-delay: 0.7s; }
+.delay-8 { animation-delay: 0.8s; }
+
+.glow-btn { animation: pulse-glow 2.5s ease-in-out infinite; }
+
+.hero-bg {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 40%, #0f172a 100%);
+  position: relative;
+  overflow: hidden;
+}
+.hero-bg::before {
+  content:'';
+  position:absolute;
+  top:-50%;left:-50%;width:200%;height:200%;
+  background: radial-gradient(ellipse at 30% 50%, rgba(255,107,53,0.12) 0%, transparent 60%),
+              radial-gradient(ellipse at 70% 30%, rgba(56,189,248,0.08) 0%, transparent 50%);
+  pointer-events:none;
+}
+
+.card-hover { transition: all 0.3s ease; }
+.card-hover:hover { transform: translateY(-6px); box-shadow: 0 20px 50px rgba(0,0,0,0.15); }
+
+.master-card { transition: all 0.4s cubic-bezier(0.4,0,0.2,1); }
+.master-card:hover { transform: translateY(-8px) scale(1.02); }
+
+.category-pill { transition: all 0.3s ease; cursor: pointer; }
+.category-pill:hover { transform: scale(1.05); }
+.category-pill.active { transform: scale(1.05); }
+
+.search-glow:focus-within {
+  box-shadow: 0 0 0 3px rgba(255,107,53,0.3), 0 8px 30px rgba(255,107,53,0.15);
+}
+
+.noise-overlay {
+  position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:9999;
+  opacity:0.03;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, #FF6B35, #FF8F65, #FFB088);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.section-dark { background: #0f172a; }
+.section-light { background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%); }
+
+.stat-counter { 
+  background: linear-gradient(135deg, rgba(255,107,53,0.1), rgba(255,107,53,0.05));
+  border: 1px solid rgba(255,107,53,0.2);
+}
+
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: #FF6B35; border-radius: 4px; }
+
+.order-modal-bg {
+  background: rgba(15,23,42,0.85);
+  backdrop-filter: blur(8px);
+}
+
+.chat-bubble-client {
+  background: linear-gradient(135deg, #FF6B35, #ff8555);
+  border-radius: 18px 18px 4px 18px;
+}
+.chat-bubble-master {
+  background: #1e293b;
+  border-radius: 18px 18px 18px 4px;
+}
+</style>
+  <style>body { box-sizing: border-box; }</style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+ </head>
+ <body class="h-full">
+  <div id="app" class="w-full h-full overflow-auto bg-slate-950 text-white" style="scroll-behavior:smooth;">
+   <div class="noise-overlay"></div><!-- NAV -->
+   <nav id="navbar" class="fixed top-0 left-0 w-full z-50 transition-all duration-300" style="background:transparent;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex items-center justify-between">
+     <a href="#hero" class="flex items-center gap-2 group" onclick="scrollToSection('hero')">
+      <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center shadow-lg shadow-orange-500/30 group-hover:scale-110 transition-transform"><i data-lucide="wrench" style="width:22px;height:22px;color:white;"></i>
+      </div><span class="font-display font-extrabold text-xl tracking-tight">Usta<span class="text-orange-400">Tap</span></span> </a>
+     <div class="hidden md:flex items-center gap-8 text-sm font-semibold text-slate-300">
+      <a href="#categories" onclick="scrollToSection('categories'); return false;" class="hover:text-orange-400 transition-colors">Категории</a> <a href="#masters" onclick="scrollToSection('masters'); return false;" class="hover:text-orange-400 transition-colors">Мастера</a> <a href="#how" onclick="scrollToSection('how'); return false;" class="hover:text-orange-400 transition-colors">Как работает</a> <a href="#about" onclick="scrollToSection('about'); return false;" class="hover:text-orange-400 transition-colors">О нас</a> <a href="#add-service" onclick="scrollToSection('add-service'); return false;" class="hover:text-orange-400 transition-colors"></a>
+     </div>
+     <div class="flex items-center gap-3">
+      <button onclick="openModal()" class="hidden sm:inline-flex items-center gap-2 bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-sm font-bold px-5 py-2.5 rounded-xl shadow-lg shadow-orange-500/25 transition-all"> <i data-lucide="plus" style="width:16px;height:16px;"></i> Заказ </button> <button id="mobile-menu-btn" class="md:hidden text-slate-300 hover:text-white p-2" onclick="toggleMobileMenu()"> <i data-lucide="menu" style="width:24px;height:24px;"></i> </button>
+     </div>
+    </div><!-- Mobile menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-slate-900/95 backdrop-blur-lg border-t border-slate-800">
+     <div class="px-6 py-4 flex flex-col gap-4 text-sm font-semibold text-slate-300">
+      <a href="#categories" onclick="scrollToSection('categories'); closeMobileMenu();" class="py-2 hover:text-orange-400">Категории</a> <a href="#masters" onclick="scrollToSection('masters'); closeMobileMenu();" class="py-2 hover:text-orange-400">Мастера</a> <a href="#how" onclick="scrollToSection('how'); closeMobileMenu();" class="py-2 hover:text-orange-400">Как работает</a> <a href="#about" onclick="scrollToSection('about'); closeMobileMenu();" class="py-2 hover:text-orange-400">О нас</a> <a href="#add-service" onclick="scrollToSection('add-service'); closeMobileMenu();" class="py-2 hover:text-orange-400">Присоединиться</a> <button onclick="openModal();closeMobileMenu();" class="flex items-center justify-center gap-2 bg-orange-500 text-white font-bold px-5 py-3 rounded-xl"> <i data-lucide="plus" style="width:16px;height:16px;"></i> Разместить заказ </button>
+     </div>
+    </div>
+   </nav><!-- HERO -->
+   <section id="hero" class="hero-bg min-h-[90%] flex items-center relative pt-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 w-full grid lg:grid-cols-2 gap-12 items-center py-16">
+     <div>
+      <div class="anim-fade delay-1 inline-flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1.5 text-orange-400 text-xs font-bold mb-6 uppercase tracking-wider">
+       <i data-lucide="zap" style="width:14px;height:14px;"></i> #1 Платформа услуг в Кыргызстане
+      </div>
+      <h1 id="hero-title" class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl leading-tight mb-6 anim-fade delay-2">Найди <span class="gradient-text">мастера</span><br>
+        за минуту</h1>
+      <p id="hero-subtitle" class="text-slate-400 text-lg sm:text-xl leading-relaxed mb-8 max-w-lg anim-fade delay-3">Лучшие специалисты Кыргызстана — сантехники, электрики, курьеры, программисты и другие профессионалы рядом с вами</p><!-- Search -->
+      <div class="anim-fade delay-4 search-glow bg-slate-800/80 border border-slate-700 rounded-2xl p-2 flex items-center gap-2 max-w-xl mb-8 transition-all">
+       <div class="flex items-center gap-2 flex-1 px-3">
+        <i data-lucide="search" class="text-slate-500" style="width:20px;height:20px;"></i> <input id="search-input" type="text" placeholder="Что вам нужно? (сантехник, курьер...)" class="bg-transparent text-white placeholder-slate-500 text-sm w-full py-3 outline-none">
+       </div><button onclick="handleSearch()" class="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold text-sm px-6 py-3 rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center gap-2 whitespace-nowrap"> <i data-lucide="search" style="width:16px;height:16px;"></i> <span class="hidden sm:inline">Найти</span> </button>
+      </div><!-- Stats -->
+      <div class="anim-fade delay-5 flex flex-wrap gap-4">
+       <div class="stat-counter rounded-xl px-5 py-3 text-center">
+        <div class="font-display font-bold text-xl text-orange-400">
+         2,500+
+        </div>
+        <div class="text-slate-500 text-xs font-semibold">
+         Мастеров
+        </div>
+       </div>
+       <div class="stat-counter rounded-xl px-5 py-3 text-center">
+        <div class="font-display font-bold text-xl text-orange-400">
+         15,000+
+        </div>
+        <div class="text-slate-500 text-xs font-semibold">
+         Заказов
+        </div>
+       </div>
+       <div class="stat-counter rounded-xl px-5 py-3 text-center">
+        <div class="font-display font-bold text-xl text-orange-400">
+         4.8 
+        </div>
+        <div class="text-slate-500 text-xs font-semibold">
+         Рейтинг
+        </div>
+       </div>
+      </div>
+     
+    </div>
+   </section><!-- CATEGORIES -->
+   <section id="categories" class="section-dark py-20 relative">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="text-center mb-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Популярные <span class="gradient-text">категории</span></h2>
+      <p class="text-slate-400 max-w-xl mx-auto">Выберите нужную услугу — мы найдём лучшего мастера для вас</p>
+     </div>
+     <div id="categories-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+     </div>
+    </div>
+   </section><!-- CATEGORY VIEW MODAL -->
+   <div id="category-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="order-modal-bg absolute inset-0" onclick="closeCategoryModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[85%] overflow-auto pointer-events-auto p-6 sm:p-8">
+      <div class="flex items-center justify-between mb-6">
+       <h3 id="category-title" class="font-display font-bold text-xl">Категория</h3><button onclick="closeCategoryModal()" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" style="width:22px;height:22px;"></i></button>
+      </div>
+      <div id="category-masters-grid" class="grid grid-cols-2 gap-4">
+      </div>
+     </div>
+    </div>
+   </div><!-- MASTERS -->
+   <section id="masters" class="py-20 relative" style="background: linear-gradient(180deg, #0f172a 0%, #162032 50%, #0f172a 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="text-center mb-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Лучшие <span class="gradient-text">мастера</span></h2>
+      <p class="text-slate-400 max-w-xl mx-auto">Проверенные специалисты Кыргызстана с высоким рейтингом</p>
+     </div><!-- Filter pills -->
+     <div class="flex flex-wrap justify-center gap-3 mb-10">
+      <button onclick="filterMasters('all')" class="category-pill active bg-orange-500 text-white text-xs font-bold px-4 py-2 rounded-full" data-filter="all">Все</button> <button onclick="filterMasters('repair')" class="category-pill bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-full border border-slate-700" data-filter="repair">Ремонт</button> <button onclick="filterMasters('it')" class="category-pill bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-full border border-slate-700" data-filter="it">IT</button> <button onclick="filterMasters('delivery')" class="category-pill bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-full border border-slate-700" data-filter="delivery">Доставка</button> <button onclick="filterMasters('cleaning')" class="category-pill bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-full border border-slate-700" data-filter="cleaning">Уборка</button>
+     </div>
+     <div id="masters-grid" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+     </div>
+    </div>
+   </section><!-- HOW IT WORKS -->
+   <section id="how" class="section-dark py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="text-center mb-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Как это <span class="gradient-text">работает</span></h2>
+      <p class="text-slate-400 max-w-xl mx-auto">Всего 4 простых шага</p>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="relative bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 text-center card-hover">
+       <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-orange-500/20">
+        
+       </div>
+       <div class="absolute top-4 right-4 font-display font-bold text-3xl text-slate-700/50">
+        01
+       </div>
+       <h3 class="font-bold text-lg mb-2">Опишите задачу</h3>
+       <p class="text-slate-400 text-sm">Расскажите, что нужно сделать, укажите бюджет и адрес</p>
+      </div>
+      <div class="relative bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 text-center card-hover">
+       <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-sky-500 to-sky-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-sky-500/20">
+        
+       </div>
+       <div class="absolute top-4 right-4 font-display font-bold text-3xl text-slate-700/50">
+        02
+       </div>
+       <h3 class="font-bold text-lg mb-2">Получите отклики</h3>
+       <p class="text-slate-400 text-sm">Мастера увидят заказ и предложат свою цену</p>
+      </div>
+      <div class="relative bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 text-center card-hover">
+       <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-emerald-500 to-emerald-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-emerald-500/20">
+        
+       </div>
+       <div class="absolute top-4 right-4 font-display font-bold text-3xl text-slate-700/50">
+        03
+       </div>
+       <h3 class="font-bold text-lg mb-2">Выберите мастера</h3>
+       <p class="text-slate-400 text-sm">Сравните цены, отзывы и выберите лучшего</p>
+      </div>
+      <div class="relative bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 text-center card-hover">
+       <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center mx-auto mb-4 text-2xl shadow-lg shadow-violet-500/20">
+        
+       </div>
+       <div class="absolute top-4 right-4 font-display font-bold text-3xl text-slate-700/50">
+        04
+       </div>
+       <h3 class="font-bold text-lg mb-2">Оцените работу</h3>
+       <p class="text-slate-400 text-sm">Оставьте отзыв и помогите другим найти хорошего мастера</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- FEATURES -->
+   <section class="py-20 relative" style="background: linear-gradient(180deg, #0f172a 0%, #1a1a2e 50%, #0f172a 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="text-center mb-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Уникальные <span class="gradient-text">фишки</span> </h2>
+     </div>
+     <div class="grid sm:grid-cols-2 gap-6">
+      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-8 card-hover group">
+       <div class="w-12 h-12 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center mb-4 text-2xl group-hover:scale-110 transition-transform">
+        <img src="f54.png" alt="Современная гостиная" class="w-full h-full object-cover">
+       </div>
+       <h3 class="font-bold text-xl mb-2">Мастера рядом</h3>
+       <p class="text-slate-400 text-sm leading-relaxed">Интерактивная карта покажет ближайших специалистов. Экономьте время — работайте с теми, кто рядом.</p>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-8 card-hover group">
+       <div class="w-12 h-12 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center mb-4 text-2xl group-hover:scale-110 transition-transform">
+        <img src="f12.png" alt="Современная гостиная" class="w-full h-full object-cover">
+       </div>
+       <h3 class="font-bold text-xl mb-2">Быстрый заказ</h3>
+       <p class="text-slate-400 text-sm leading-relaxed">Создайте заказ в 1 клик. Опишите задачу — и мастера уже откликаются!</p>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-8 card-hover group">
+       <div class="w-12 h-12 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center mb-4 text-2xl group-hover:scale-110 transition-transform">
+        <img src="f36.png" alt="Современная гостиная" class="w-full h-full object-cover">
+       </div>
+       <h3 class="font-bold text-xl mb-2">Умный подбор</h3>
+       <p class="text-slate-400 text-sm leading-relaxed">AI автоматически подберёт лучшего исполнителя по рейтингу, цене и расстоянию.</p>
+      </div>
+      <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-8 card-hover group">
+       <div class="w-12 h-12 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center mb-4 text-2xl group-hover:scale-110 transition-transform">
+        <img src="src.png" alt="Современная гостиная" class="w-full h-full object-cover">
+       </div>
+       <h3 class="font-bold text-xl mb-2">Безопасная сделка</h3>
+       <p class="text-slate-400 text-sm leading-relaxed">Деньги замораживаются до завершения работы. Мастер получит оплату только после вашего подтверждения.</p>
+      </div>
+     </div>
+    </div>
+   </section><!-- ABOUT -->
+   <section id="about" class="section-dark py-20">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="grid lg:grid-cols-2 gap-12 items-center">
+      <div>
+       <h2 class="font-display font-bold text-3xl sm:text-4xl mb-6">О платформе <span class="gradient-text">UstaTap</span></h2>
+       <p class="text-slate-400 leading-relaxed mb-6">UstaTap — первая в Кыргызстане платформа, которая объединяет людей и мастеров. Мы создали удобный сервис, где каждый может найти работу или найти исполнителя за считанные минуты.</p>
+       <p class="text-slate-400 leading-relaxed mb-8">Наша миссия — сделать рынок услуг прозрачным, безопасным и доступным для каждого. Мы верим, что технологии могут помочь людям экономить время и зарабатывать достойно.</p>
+       <div class="flex flex-wrap gap-4">
+        <div class="flex items-center gap-2 text-sm"><i data-lucide="check-circle" class="text-green-400" style="width:18px;height:18px;"></i> <span class="text-slate-300">Проверенные мастера</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm"><i data-lucide="check-circle" class="text-green-400" style="width:18px;height:18px;"></i> <span class="text-slate-300">Безопасные платежи</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm"><i data-lucide="check-circle" class="text-green-400" style="width:18px;height:18px;"></i> <span class="text-slate-300">Поддержка 24/7</span>
+        </div>
+        <div class="flex items-center gap-2 text-sm"><i data-lucide="check-circle" class="text-green-400" style="width:18px;height:18px;"></i> <span class="text-slate-300">По всему Кыргызстану</span>
+        </div>
+       </div>
+      </div>
+      <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8">
+       <h3 class="font-bold text-xl mb-6 text-center">Почему выбирают нас?</h3>
+       <div class="space-y-5">
+        <div class="flex items-start gap-4">
+         <div class="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center flex-shrink-0 text-lg">
+          
+         </div>
+         <div>
+          <div class="font-semibold text-sm mb-1">
+           Скорость
+          </div>
+          <div class="text-slate-400 text-xs">
+           Среднее время отклика — 5 минут
+          </div>
+         </div>
+        </div>
+        <div class="flex items-start gap-4">
+         <div class="w-10 h-10 rounded-xl bg-sky-500/10 flex items-center justify-center flex-shrink-0 text-lg">
+          
+         </div>
+         <div>
+          <div class="font-semibold text-sm mb-1">
+           Выгодные цены
+          </div>
+          <div class="text-slate-400 text-xs">
+           Конкуренция снижает цены на 20-30%
+          </div>
+         </div>
+        </div>
+        <div class="flex items-start gap-4">
+         <div class="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0 text-lg">
+          
+         </div>
+         <div>
+          <div class="font-semibold text-sm mb-1">
+           Качество
+          </div>
+          <div class="text-slate-400 text-xs">
+           Только мастера с рейтингом 4.5+
+          </div>
+         </div>
+        </div>
+       </div>
+      </div>
+     </div>
+    </div>
+   </section><!-- REVIEWS -->
+   <section class="py-20" style="background: linear-gradient(180deg, #0f172a 0%, #162032 50%, #0f172a 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="text-center mb-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Отзывы <span class="gradient-text">клиентов</span></h2>
+     </div>
+     <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6" id="reviews-grid"></div>
+    </div>
+   </section><!-- CTA -->
+   <section class="py-20 section-dark">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 text-center">
+     <div class="bg-gradient-to-br from-orange-500/10 to-slate-800 border border-orange-500/15 rounded-3xl p-10 sm:p-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Готовы начать?</h2>
+      <p class="text-slate-400 text-lg mb-8 max-w-lg mx-auto">Разместите первый заказ бесплатно и убедитесь в качестве нашего сервиса</p>
+      <div class="flex flex-col sm:flex-row gap-4 justify-center">
+       <button onclick="openModal()" class="glow-btn bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-8 py-4 rounded-xl text-lg shadow-xl transition-all flex items-center justify-center gap-2"> <i data-lucide="plus" style="width:20px;height:20px;"></i> Разместить заказ </button> <button onclick="document.getElementById('masters').scrollIntoView({behavior:'smooth'})" class="bg-slate-800 border border-slate-700 hover:border-orange-500/30 text-white font-bold px-8 py-4 rounded-xl text-lg transition-all flex items-center justify-center gap-2"> <i data-lucide="users" style="width:20px;height:20px;"></i> Найти мастера </button>
+      </div>
+     </div>
+    </div>
+   </section><!-- CONTACTS -->
+   <section id="contacts" class="py-20" style="background: linear-gradient(180deg, #0f172a 0%, #0c1322 100%);">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="text-center mb-14">
+      <h2 class="font-display font-bold text-3xl sm:text-4xl mb-4">Добавить <span class="gradient-text">свою услугу</span></h2>
+      <p class="text-slate-400 max-w-xl mx-auto">Заполните форму и присоединяйтесь к нашему сообществу мастеров</p>
+     </div>
+     <div class="max-w-2xl mx-auto bg-slate-800/50 border border-slate-700/50 rounded-2xl p-8">
+      <form id="add-service-form" onsubmit="submitService(event)" class="space-y-4">
+       <div>
+        <label for="master-name" class="block text-sm font-semibold text-slate-300 mb-1.5">Ваше имя</label> <input id="master-name" type="text" placeholder="Азамат Касымов" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors">
+       </div>
+       <div>
+        <label for="service-category" class="block text-sm font-semibold text-slate-300 mb-1.5">Категория услуги</label> <select id="service-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-orange-500 transition-colors"> <option>Сантехник</option><option>Электрик</option><option>Программист</option><option>Курьер</option><option>Уборка</option><option>Ремонт</option><option>Дизайнер</option><option>Репетитор</option> </select>
+       </div>
+       <div>
+        <label for="service-desc" class="block text-sm font-semibold text-slate-300 mb-1.5">Описание услуги</label> <textarea id="service-desc" rows="3" placeholder="Расскажите о своих навыках и опыте..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors resize-none"></textarea>
+       </div>
+       <div class="grid grid-cols-2 gap-4">
+        <div>
+         <label for="service-phone" class="block text-sm font-semibold text-slate-300 mb-1.5">Номер телефона</label> <input id="service-phone" type="tel" placeholder="+996 777 123 456" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors">
+        </div>
+        <div>
+         <label for="service-city" class="block text-sm font-semibold text-slate-300 mb-1.5">Город</label> <input id="service-city" type="text" placeholder="Манас" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors">
+        </div>
+       </div><button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2"> <i data-lucide="plus" style="width:18px;height:18px;"></i> Добавить услугу </button>
+      </form>
+      <div id="service-success" class="hidden text-center py-8">
+       <div class="text-5xl mb-4">
+        
+       </div>
+       <h3 class="font-display font-bold text-xl mb-2">Спасибо за регистрацию!</h3>
+       <p class="text-slate-400 text-sm mb-6">Вы добавлены в платформу. Скоро начнут приходить заказы!</p><button onclick="resetServiceForm()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition-colors">Готово</button>
+      </div>
+     </div>
+    </div>
+   </section><!-- FOOTER -->
+   <footer class="border-t border-slate-800 py-10" style="background:#0a0f1a;">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+     <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-2">
+       <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+        <svg width="16" height="16" viewbox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+        </svg>
+       </div><span class="font-display font-bold text-sm">UstaTap</span>
+      </div>
+      <div class="text-slate-500 text-xs">
+       © 2026 UstaTap. Все права защищены.
+      </div>
+      <div class="flex gap-4">
+       <a href="#" class="text-slate-500 hover:text-orange-400 transition-colors"><i data-lucide="instagram" style="width:18px;height:18px;"></i></a> <a href="#" class="text-slate-500 hover:text-orange-400 transition-colors"><i data-lucide="facebook" style="width:18px;height:18px;"></i></a> <a href="#" class="text-slate-500 hover:text-orange-400 transition-colors"><i data-lucide="twitter" style="width:18px;height:18px;"></i></a>
+      </div>
+     </div>
+    </div>
+   </footer><!-- ORDER MODAL -->
+   <div id="order-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="order-modal-bg absolute inset-0" onclick="closeModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+     <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg max-h-[85%] overflow-auto pointer-events-auto p-6 sm:p-8 anim-scale" style="animation-delay:0s!important;opacity:1;">
+      <div class="flex items-center justify-between mb-6">
+       <h3 class="font-display font-bold text-xl">Новый заказ</h3><button onclick="closeModal()" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" style="width:22px;height:22px;"></i></button>
+      </div>
+      <form id="order-form" onsubmit="submitOrder(event)" class="space-y-4">
+       <div>
+        <label for="order-category" class="block text-sm font-semibold text-slate-300 mb-1.5">Категория</label> <select id="order-category" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white outline-none focus:border-orange-500 transition-colors"> <option>Сантехник</option><option>Электрик</option><option>Программист</option><option>Курьер</option><option>Уборка</option><option>Ремонт</option><option>Дизайнер</option><option>Репетитор</option> </select>
+       </div>
+       <div>
+        <label for="order-desc" class="block text-sm font-semibold text-slate-300 mb-1.5">Описание задачи</label> <textarea id="order-desc" rows="3" placeholder="Опишите, что нужно сделать..." class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors resize-none"></textarea>
+       </div>
+       <div class="grid grid-cols-2 gap-4">
+        <div>
+         <label for="order-budget" class="block text-sm font-semibold text-slate-300 mb-1.5">Бюджет (сом)</label> <input id="order-budget" type="number" placeholder="1000" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors">
+        </div>
+        <div>
+         <label for="order-address" class="block text-sm font-semibold text-slate-300 mb-1.5">Адрес</label> <input id="order-address" type="text" placeholder="г. Бишкек" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 outline-none focus:border-orange-500 transition-colors">
+        </div>
+       </div><button type="submit" id="order-submit-btn" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-orange-500/25 transition-all flex items-center justify-center gap-2"> <i data-lucide="send" style="width:18px;height:18px;"></i> Разместить заказ </button>
+      </form>
+      <div id="order-success" class="hidden text-center py-8">
+       <div class="text-5xl mb-4">
+        
+       </div>
+       <h3 class="font-display font-bold text-xl mb-2">Заказ размещён!</h3>
+       <p class="text-slate-400 text-sm mb-6">Мастера уже видят ваш заказ и скоро откликнутся</p><button onclick="closeModal()" class="bg-orange-500 hover:bg-orange-600 text-white font-bold px-6 py-3 rounded-xl transition-colors">Отлично!</button>
+      </div>
+     </div>
+    </div>
+   </div><!-- MASTER PROFILE MODAL -->
+   <div id="master-modal" class="fixed inset-0 z-[100] hidden">
+    <div class="order-modal-bg absolute inset-0" onclick="closeMasterModal()"></div>
+    <div class="absolute inset-0 flex items-center justify-center p-4 pointer-events-none">
+     <div id="master-modal-content" class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md max-h-[85%] overflow-auto pointer-events-auto p-6 sm:p-8">
+     </div>
+    </div>
+   </div>
+  </div>
+  <script>
+// DATA
+const categories = [
+  { icon: 'wrench', name: 'Сантехник', count: 340, color: 'from-blue-500/20 to-blue-600/10', border: 'border-blue-500/20' },
+  { icon: 'zap', name: 'Электрик', count: 280, color: 'from-yellow-500/20 to-yellow-600/10', border: 'border-yellow-500/20' },
+  { icon: 'code', name: 'Программист', count: 520, color: 'from-violet-500/20 to-violet-600/10', border: 'border-violet-500/20' },
+  { icon: 'truck', name: 'Курьер', count: 410, color: 'from-green-500/20 to-green-600/10', border: 'border-green-500/20' },
+  { icon: 'broom', name: 'Уборка', count: 290, color: 'from-pink-500/20 to-pink-600/10', border: 'border-pink-500/20' },
+  { icon: 'hammer', name: 'Ремонт', count: 600, color: 'from-orange-500/20 to-orange-600/10', border: 'border-orange-500/20' },
+  { icon: 'palette', name: 'Дизайнер', count: 180, color: 'from-rose-500/20 to-rose-600/10', border: 'border-rose-500/20' },
+  { icon: 'book', name: 'Репетитор', count: 350, color: 'from-teal-500/20 to-teal-600/10', border: 'border-teal-500/20' },
+];
+
+const masters = [
+  // ГЛАВНАЯ СТРАНИЦА - ТОП 3 (repair + it + delivery + cleaning все категории)
+  { name: 'Азамат Касымов', icon: 'user', rating: 5.0, reviews: 256, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 123 456', desc: 'Опыт 15 лет. Все виды сантехнических работ.', isTop: true },
+  { name: 'Марлен Ибрагимов', icon: 'user', rating: 5.0, reviews: 324, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 333 444', desc: 'Автоматизация и распределительные щиты.', isTop: true },
+  { name: 'Лидия Чеботарева', icon: 'user', rating: 5.0, reviews: 289, category: 'it', skill: 'UI/UX Дизайнер', city: 'Бишкек', phone: '+996 773 400 500', desc: 'Прототипирование и дизайн интерфейсов мирового класса.', isTop: true },
+  
+  // САНТЕХНИКИ (repair) - 35+ мастеров
+  { name: 'Азамат Касымов', icon: 'user', rating: 5.0, reviews: 256, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 123 456', desc: 'Опыт 15 лет. Все виды сантехнических работ.' },
+  { name: 'Канат Сатыбаев', icon: 'user', rating: 5.0, reviews: 310, category: 'repair', skill: 'Сантехник', city: 'Нарын', phone: '+996 777 345 678', desc: 'Водопровод и канализация. Гарантия качества.' },
+  { name: 'Талант Керимов', icon: 'user', rating: 4.9, reviews: 298, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 567 890', desc: 'Котельные, отопление, водоснабжение.' },
+  { name: 'Нурдин Искаков', icon: 'user', rating: 4.9, reviews: 245, category: 'repair', skill: 'Сантехник', city: 'Нарын', phone: '+996 777 789 012', desc: 'Установка сантехники под ключ.' },
+  { name: 'Орынбай Жангельдиев', icon: 'user', rating: 4.9, reviews: 301, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 890 123', desc: 'Паяльная работа и монтаж труб высокого класса.' },
+  { name: 'Бакыт Керимбаев', icon: 'user', rating: 4.8, reviews: 267, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 234 567', desc: 'Ремонт и обслуживание водопровода.' },
+  { name: 'Ермек Абылаев', icon: 'user', rating: 4.8, reviews: 289, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 345 679', desc: 'Замена труб и фитингов. Быстрая работа.' },
+  { name: 'Динар Абдраманов', icon: 'user', rating: 4.7, reviews: 234, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 456 780', desc: 'Септики, скважины, водоснабжение дач.' },
+  { name: 'Сергей Николаев', icon: 'user', rating: 4.7, reviews: 276, category: 'repair', skill: 'Сантехник', city: 'Кара-Балта', phone: '+996 777 567 891', desc: 'Промышленная сантехника и проектирование.' },
+  { name: 'Тимур Сулейманов', icon: 'user', rating: 4.8, reviews: 298, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 678 902', desc: 'Полипропиленовые и металлопластиковые трубы.' },
+  { name: 'Раиль Хасанов', icon: 'user', rating: 4.9, reviews: 312, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 789 013', desc: 'Газовое оборудование и котлы отопления.' },
+  { name: 'Максим Петров', icon: 'user', rating: 4.8, reviews: 245, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 890 124', desc: 'Установка ванн, душевых кабин, унитазов.' },
+  { name: 'Айтбек Кайратов', icon: 'user', rating: 4.7, reviews: 267, category: 'repair', skill: 'Сантехник', city: 'Талас', phone: '+996 777 901 235', desc: 'Аварийная служба - работаем 24/7.' },
+  { name: 'Виктор Соловьев', icon: 'user', rating: 4.8, reviews: 289, category: 'repair', skill: 'Сантехник', city: 'Нарын', phone: '+996 777 012 346', desc: 'Радиаторы отопления, кран буксы, прокладки.' },
+  { name: 'Андрей Смирнов', icon: 'user', rating: 4.9, reviews: 301, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 123 457', desc: 'Биотуалеты, системы водоочистки, фильтры.' },
+  { name: 'Мансур Жанурбеков', icon: 'user', rating: 4.6, reviews: 198, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 234 568', desc: 'Замена счётчиков воды и регулировка давления.' },
+  { name: 'Аскар Исабеков', icon: 'user', rating: 4.8, reviews: 278, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 345 680', desc: 'Профилактическое обслуживание водопровода.' },
+  { name: 'Павел Иванов', icon: 'user', rating: 4.7, reviews: 256, category: 'repair', skill: 'Сантехник', city: 'Кара-Балта', phone: '+996 777 456 781', desc: 'Прочистка засоров, замена канализации.' },
+  { name: 'Резо Бекулов', icon: 'user', rating: 4.9, reviews: 334, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 567 892', desc: 'Системы отопления загородных домов.' },
+  { name: 'Дастан Оналиев', icon: 'user', rating: 4.8, reviews: 267, category: 'repair', skill: 'Сантехник', city: 'Талас', phone: '+996 777 678 903', desc: 'Монтаж теплого пола и радиаторов.' },
+  { name: 'Олег Васильев', icon: 'user', rating: 4.7, reviews: 289, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 789 014', desc: 'Чистка и ремонт скважин, насосные станции.' },
+  { name: 'Кайрат Амандыков', icon: 'user', rating: 4.6, reviews: 223, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 890 125', desc: 'Установка умных систем управления водой.' },
+  { name: 'Илья Синицын', icon: 'user', rating: 4.8, reviews: 298, category: 'repair', skill: 'Сантехник', city: 'Нарын', phone: '+996 777 901 236', desc: 'Регулировка и ремонт смесителей, кранов.' },
+  { name: 'Сабит Ерқалиев', icon: 'user', rating: 4.9, reviews: 312, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 012 347', desc: 'Локальные системы очистки сточных вод.' },
+  { name: 'Юрий Козлов', icon: 'user', rating: 4.7, reviews: 245, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 123 458', desc: 'Модернизация старых водопроводных систем.' },
+  { name: 'Герман Розен', icon: 'user', rating: 4.8, reviews: 276, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 234 569', desc: 'Установка джакузи и гидромассажных ванн.' },
+  { name: 'Арнольд Шульц', icon: 'user', rating: 4.9, reviews: 301, category: 'repair', skill: 'Сантехник', city: 'Талас', phone: '+996 777 345 681', desc: 'Ремонт скважин, погружные насосы, буры.' },
+  { name: 'Леонид Соколов', icon: 'user', rating: 4.6, reviews: 267, category: 'repair', skill: 'Сантехник', city: 'Кара-Балта', phone: '+996 777 456 782', desc: 'Гидроизоляция и герметизация ванных комнат.' },
+  { name: 'Владимир Медведев', icon: 'user', rating: 4.8, reviews: 289, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 567 893', desc: 'Монтаж скрытой прокладки трубопроводов.' },
+  { name: 'Константин Орлов', icon: 'user', rating: 4.7, reviews: 234, category: 'repair', skill: 'Сантехник', city: 'Ош', phone: '+996 777 678 904', desc: 'Установка и ремонт водонагревателей, бойлеров.' },
+  { name: 'Борис Федоров', icon: 'user', rating: 4.9, reviews: 315, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 789 015', desc: 'Проектирование водоснабжения дачных участков.' },
+  { name: 'Глеб Иванов', icon: 'user', rating: 4.8, reviews: 298, category: 'repair', skill: 'Сантехник', city: 'Нарын', phone: '+996 777 890 126', desc: 'Замена гибких подводок и расширительных баков.' },
+  { name: 'Денис Молчанов', icon: 'user', rating: 4.7, reviews: 256, category: 'repair', skill: 'Сантехник', city: 'Бишкек', phone: '+996 777 901 237', desc: 'Ремонт пассатижей, муфт и уголков.' },
+  
+  // ЭЛЕКТРИКИ (repair) - 35+ мастеров
+  { name: 'Марлен Ибрагимов', emoji: '', rating: 5.0, reviews: 324, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 333 444', desc: 'Автоматизация и распределительные щиты.' },
+  { name: 'Асхат Малаев', emoji: '', rating: 4.9, reviews: 276, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 222 333', desc: 'Электромонтажные работы любой сложности.' },
+  { name: 'Эдем Кучумов', emoji: '', rating: 4.9, reviews: 267, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 666 777', desc: 'Электробезопасность и техническое обслуживание.' },
+  { name: 'Сулайман Рахимов', emoji: '', rating: 4.8, reviews: 295, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 888 999', desc: 'УЗО, дифавтоматы, стабилизаторы тока.' },
+  { name: 'Бакыт Жумабеков', emoji: '', rating: 4.8, reviews: 198, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 111 222', desc: 'Проводка, розетки, щитки. Быстрое решение.' },
+  { name: 'Руслан Касымов', emoji: '', rating: 4.9, reviews: 289, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 444 555', desc: 'Трёхфазная проводка и трансформаторы.' },
+  { name: 'Айтбек Аманов', emoji: '', rating: 4.7, reviews: 234, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 555 666', desc: 'Установка счётчиков и коммутации.' },
+  { name: 'Кайрат Кабылов', emoji: '', rating: 4.8, reviews: 267, category: 'repair', skill: 'Электрик', city: 'Нарын', phone: '+996 775 777 888', desc: 'Аварийное отключение и техническое обслуживание.' },
+  { name: 'Жаннат Нуранов', emoji: '', rating: 4.8, reviews: 301, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 999 000', desc: 'Освещение и системы видеонаблюдения.' },
+  { name: 'Алан Федоров', emoji: '', rating: 4.9, reviews: 312, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 111 000', desc: 'Промышленная автоматика и диагностика.' },
+  { name: 'Максим Борисов', emoji: '', rating: 4.7, reviews: 245, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 222 111', desc: 'Замена электросчётчиков и автоматов.' },
+  { name: 'Дмитрий Соколов', emoji: '', rating: 4.8, reviews: 289, category: 'repair', skill: 'Электрик', city: 'Талас', phone: '+996 775 333 222', desc: 'Системы заземления и молниезащиты.' },
+  { name: 'Павел Антонов', emoji: '', rating: 4.9, reviews: 298, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 444 333', desc: 'Ремонт и замена проводки в старых домах.' },
+  { name: 'Сергей Орлов', emoji: '', rating: 4.6, reviews: 198, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 555 444', desc: 'Светодиодное освещение и энергосбережение.' },
+  { name: 'Виктор Миронов', emoji: '', rating: 4.8, reviews: 276, category: 'repair', skill: 'Электрик', city: 'Нарын', phone: '+996 775 666 555', desc: 'Установка кондиционеров и тепловых насосов.' },
+  { name: 'Иван Соколов', emoji: '', rating: 4.9, reviews: 310, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 777 666', desc: 'Электрика в автомобилях и генераторах.' },
+  { name: 'Андрей Петров', emoji: '', rating: 4.7, reviews: 234, category: 'repair', skill: 'Электрик', city: 'Кара-Балта', phone: '+996 775 888 777', desc: 'Сварочные аппараты, компрессоры, шлифмашины.' },
+  { name: 'Артём Волков', emoji: '', rating: 4.8, reviews: 289, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 999 888', desc: 'Замена кабельных линий и разветвления.' },
+  { name: 'Геннадий Козлов', emoji: '', rating: 4.9, reviews: 301, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 000 999', desc: 'Энергоаудит и модернизация электросистем.' },
+  { name: 'Давид Абрамов', emoji: '', rating: 4.8, reviews: 267, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 111 888', desc: 'Установка УПС и аккумуляторных батарей.' },
+  { name: 'Егор Морозов', emoji: '', rating: 4.7, reviews: 256, category: 'repair', skill: 'Электрик', city: 'Талас', phone: '+996 775 222 999', desc: 'Диагностика и ремонт электронной техники.' },
+  { name: 'Элемент Петренко', emoji: '', rating: 4.9, reviews: 315, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 333 000', desc: 'Сертифицированный специалист по электробезопасности.' },
+  { name: 'Жанузак Камалов', emoji: '', rating: 4.8, reviews: 298, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 444 111', desc: 'Монтаж кабельных лотков и коробов.' },
+  { name: 'Залимхан Давыдов', emoji: '', rating: 4.7, reviews: 245, category: 'repair', skill: 'Электрик', city: 'Нарын', phone: '+996 775 555 222', desc: 'Ремонт и испытание защитных реле.' },
+  { name: 'Игорь Кузьмин', emoji: '', rating: 4.8, reviews: 289, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 666 333', desc: 'Установка видеодомофонов и охранных систем.' },
+  { name: 'Йохан Фройнд', emoji: '', rating: 4.9, reviews: 320, category: 'repair', skill: 'Электрик', city: 'Ош', phone: '+996 775 777 444', desc: 'Европейский стандарт электромонтажных работ.' },
+  { name: 'Карим Сафин', emoji: '', rating: 4.6, reviews: 198, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 888 555', desc: 'Прокладка кабелей в трубах и кабель-каналах.' },
+  { name: 'Лев Дорохов', emoji: '', rating: 4.8, reviews: 276, category: 'repair', skill: 'Электрик', city: 'Талас', phone: '+996 775 999 666', desc: 'Подключение к сети потребителей третьей категории.' },
+  { name: 'Макар Новиков', emoji: '', rating: 4.9, reviews: 305, category: 'repair', skill: 'Электрик', city: 'Бишкек', phone: '+996 775 000 777', desc: 'Диагностика и ремонт высоковольтного оборудования.' },
+  
+  // IT СПЕЦИАЛИСТЫ (it) - 35+ мастеров
+  { name: 'Лидия Чеботарева', emoji: '', rating: 5.0, reviews: 289, category: 'it', skill: 'UI/UX Дизайнер', city: 'Бишкек', phone: '+996 773 400 500', desc: 'Прототипирование и дизайн интерфейсов мирового класса.' },
+  { name: 'Айгуль Маматова', emoji: '', rating: 5.0, reviews: 310, category: 'it', skill: 'Веб-дизайнер', city: 'Бишкек', phone: '+996 773 999 000', desc: 'Создание сайтов и логотипов. Figma, Adobe. 10+ лет опыта.' },
+  { name: 'Ксения Волкова', emoji: '', rating: 4.9, reviews: 301, category: 'it', skill: 'Графический дизайнер', city: 'Бишкек', phone: '+996 773 600 700', desc: 'Полиграфия, баннеры, 3D визуализация на высочайшем уровне.' },
+  { name: 'Дарья Кулешова', emoji: '', rating: 4.9, reviews: 256, category: 'it', skill: 'Frontend разработчик', city: 'Бишкек', phone: '+996 773 200 300', desc: 'React, Vue, JavaScript. Быстрые и безопасные сайты.' },
+  { name: 'Эрмек Абдыкалыков', emoji: '', rating: 4.8, reviews: 187, category: 'it', skill: 'Программист', city: 'Бишкек', phone: '+996 773 100 200', desc: 'Мобильные приложения, боты, автоматизация бизнеса.' },
+  { name: 'Елена Сокова', emoji: '', rating: 4.9, reviews: 278, category: 'it', skill: 'Веб-разработчик', city: 'Бишкек', phone: '+996 773 111 222', desc: 'Полный цикл разработки: фронтенд, бэкенд, деплой.' },
+  { name: 'Никита Правдин', emoji: '', rating: 4.8, reviews: 245, category: 'it', skill: 'Backend разработчик', city: 'Бишкек', phone: '+996 773 222 333', desc: 'Python, Node.js, SQL. Масштабируемые приложения.' },
+  { name: 'Оксана Морозова', emoji: '', rating: 4.9, reviews: 289, category: 'it', skill: 'QA инженер', city: 'Бишкек', phone: '+996 773 333 444', desc: 'Тестирование, автоматизация, отчёты по ошибкам.' },
+  { name: 'Петр Козлов', emoji: '', rating: 4.7, reviews: 198, category: 'it', skill: 'DevOps инженер', city: 'Бишкек', phone: '+996 773 444 555', desc: 'Docker, Kubernetes, CI/CD пайплайны.' },
+  { name: 'Раиса Волкова', emoji: '', rating: 4.8, reviews: 267, category: 'it', skill: 'SEO специалист', city: 'Бишкек', phone: '+996 773 555 666', desc: 'Оптимизация сайтов под Гугл и Яндекс.' },
+  { name: 'Сергей Иванов', emoji: '', rating: 4.9, reviews: 312, category: 'it', skill: 'Системный администратор', city: 'Бишкек', phone: '+996 773 666 777', desc: 'Настройка серверов, сетей, резервное копирование.' },
+  { name: 'Тамара Петрова', emoji: '', rating: 4.8, reviews: 289, category: 'it', skill: 'Копирайтер', city: 'Бишкек', phone: '+996 773 777 888', desc: 'Контент для сайтов, рекламных объявлений, соцсетей.' },
+  { name: 'Уровен Сыдыков', emoji: '', rating: 4.9, reviews: 301, category: 'it', skill: 'Data Scientist', city: 'Бишкек', phone: '+996 773 888 999', desc: 'Анализ данных, машинное обучение, прогнозирование.' },
+  { name: 'Виолета Степанова', emoji: '', rating: 4.7, reviews: 245, category: 'it', skill: 'SMM менеджер', city: 'Бишкек', phone: '+996 773 999 000', desc: 'Управление соцсетями, контент-план, аналитика.' },
+  { name: 'Вячеслав Соловьев', emoji: '', rating: 4.8, reviews: 278, category: 'it', skill: 'Создатель контента', city: 'Бишкек', phone: '+996 773 000 111', desc: 'Видео, фото, монтаж, постпродакшн для YouTube.' },
+  { name: 'Галина Кузнецова', emoji: '', rating: 4.9, reviews: 298, category: 'it', skill: 'Специалист 1С', city: 'Бишкек', phone: '+996 773 111 222', desc: 'Конфигурирование, внедрение, поддержка 1С.' },
+  { name: 'Даниил Назаров', emoji: '', rating: 4.8, reviews: 267, category: 'it', skill: 'Мобильный разработчик', city: 'Бишкек', phone: '+996 773 222 333', desc: 'iOS, Android, React Native. Приложения под ключ.' },
+  { name: 'Евгения Лебедева', emoji: '', rating: 4.9, reviews: 310, category: 'it', skill: 'Маркетолог', city: 'Бишкек', phone: '+996 773 333 444', desc: 'Стратегия, аналитика, пиксели, рекламные кампании.' },
+  { name: 'Фёдор Малышев', emoji: '', rating: 4.7, reviews: 234, category: 'it', skill: 'Веб-мастер', city: 'Бишкек', phone: '+996 773 444 555', desc: 'Настройка хостинга, домены, SSL сертификаты.' },
+  { name: 'Геннадий Сычёв', emoji: '', rating: 4.8, reviews: 289, category: 'it', skill: 'IT консультант', city: 'Бишкек', phone: '+996 773 555 666', desc: 'Аудит IT, подбор решений, оптимизация затрат.' },
+  { name: 'Ханна Штейн', emoji: '', rating: 4.9, reviews: 301, category: 'it', skill: 'PM/ Scrum Master', city: 'Бишкек', phone: '+996 773 666 777', desc: 'Управление проектами, Agile, координация команд.' },
+  { name: 'Ирина Павлова', emoji: '', rating: 4.8, reviews: 276, category: 'it', skill: 'Трейнер IT', city: 'Бишкек', phone: '+996 773 777 888', desc: 'Обучение HTML, CSS, JavaScript, основы программирования.' },
+  { name: 'Йошуа Брайан', emoji: '', rating: 4.9, reviews: 315, category: 'it', skill: 'Архитектор ПО', city: 'Бишкек', phone: '+996 773 888 999', desc: 'Проектирование, микросервисы, масштабируемость.' },
+  { name: 'Кристина Смирнова', emoji: '', rating: 4.7, reviews: 245, category: 'it', skill: 'Фрилансер', city: 'Бишкек', phone: '+996 773 999 000', desc: 'Разовые проекты, прототипирование, консультации.' },
+  { name: 'Лиам О\'Брайен', emoji: '', rating: 4.8, reviews: 298, category: 'it', skill: 'Cybersecurity специалист', city: 'Бишкек', phone: '+996 773 000 111', desc: 'Безопасность, пентесты, защита от кибератак.' },
+  { name: 'Марина Беляева', emoji: '', rating: 4.9, reviews: 267, category: 'it', skill: 'Дизайнер интерьеров', city: 'Бишкек', phone: '+996 773 111 222', desc: '3D визуализация, SketchUp, ArchiCAD, рендеры.' },
+  { name: 'Михаил Андреев', emoji: '', rating: 4.8, reviews: 289, category: 'it', skill: 'Инженер качества', city: 'Бишкек', phone: '+996 773 222 333', desc: 'Тестирование, автоматизация, баг-репорты.' },
+  { name: 'Нина Роговая', emoji: '', rating: 4.9, reviews: 301, category: 'it', skill: 'Евангелист IT', city: 'Бишкек', phone: '+996 773 333 444', desc: 'Презентации, публичные выступления, менторство.' },
+  { name: 'Олег Щербаков', emoji: '', rating: 4.7, reviews: 256, category: 'it', skill: 'Специалист по аналитике', city: 'Бишкек', phone: '+996 773 444 555', desc: 'Google Analytics, Mixpanel, Power BI, Tableau.' },
+  { name: 'Полина Морозова', emoji: '', rating: 4.8, reviews: 278, category: 'it', skill: 'Product менеджер', city: 'Бишкек', phone: '+996 773 555 666', desc: 'Стратегия продукта, фичи, roadmap разработки.' },
+  
+  // КУРЬЕРЫ (delivery) - 30+ мастеров
+  { name: 'Виктор Соколов', emoji: '', rating: 4.9, reviews: 434, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 717 718', desc: 'Доставка по городу и области. Опыт 12 лет.' },
+  { name: 'Адам Саматов', emoji: '', rating: 4.9, reviews: 412, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 414 415', desc: 'Грузовик для больших объёмов. Страховка включена.' },
+  { name: 'Олег Петров', emoji: '', rating: 4.9, reviews: 387, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 111 112', desc: 'Доставка 24/7. Страховка груза. Всегда надежен.' },
+  { name: 'Талгат Иманов', emoji: '', rating: 4.8, reviews: 389, category: 'delivery', skill: 'Курьер', city: 'Нарын', phone: '+996 771 616 617', desc: 'Опыт работы 8 лет. Все районы города и области.' },
+  { name: 'Нурлан Токтобаев', emoji: '', rating: 4.8, reviews: 420, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 010 101', desc: 'Быстрая доставка по городу за 25-30 минут.' },
+  { name: 'Азамат Осмонов', emoji: '', rating: 4.9, reviews: 398, category: 'delivery', skill: 'Курьер', city: 'Ош', phone: '+996 771 212 213', desc: 'Доставка по Ошской области. Надежный проверенный.' },
+  { name: 'Бахтияр Уметов', emoji: '', rating: 4.8, reviews: 367, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 313 314', desc: 'Фургон для мебели и крупногабаритных грузов.' },
+  { name: 'Виталий Кравчик', emoji: '', rating: 4.7, reviews: 298, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 414 416', desc: 'Аккуратная доставка посуды, хрусталя, хрупких предметов.' },
+  { name: 'Газиз Жамалов', emoji: '', rating: 4.9, reviews: 412, category: 'delivery', skill: 'Курьер', city: 'Нарын', phone: '+996 771 515 516', desc: 'Межрайонная доставка, опыт 10+ лет.' },
+  { name: 'Даулет Искаков', emoji: '', rating: 4.8, reviews: 345, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 616 618', desc: 'Доставка на личном авто. Чистый, вежливый.' },
+  { name: 'Ерик Абилов', emoji: '', rating: 4.9, reviews: 389, category: 'delivery', skill: 'Курьер', city: 'Ош', phone: '+996 771 717 720', desc: 'Срочная доставка, спецперевозки, страховка 100%.' },
+  { name: 'Юнус Кокоев', emoji: '', rating: 4.8, reviews: 376, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 818 819', desc: 'Доставка продуктов и продовольствия в специальных контейнерах.' },
+  { name: 'Жансулу Рахманова', emoji: '', rating: 4.9, reviews: 267, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 919 920', desc: 'Женский курьер для безопасных доставок.' },
+  { name: 'Зиядулла Конаев', emoji: '', rating: 4.7, reviews: 298, category: 'delivery', skill: 'Курьер', city: 'Нарын', phone: '+996 771 020 021', desc: 'Грузовой транспорт, переезды, помощь грузчика.' },
+  { name: 'Идрис Ганиев', emoji: '', rating: 4.8, reviews: 345, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 121 122', desc: 'Доставка документов, посылок, письма 24/7.' },
+  { name: 'Канат Байбутенов', emoji: '', rating: 4.9, reviews: 412, category: 'delivery', skill: 'Курьер', city: 'Ош', phone: '+996 771 222 223', desc: 'Межрегиональная доставка Бишкек-Ош за 4 часа.' },
+  { name: 'Лидер Сатыбалдиев', emoji: '', rating: 4.8, reviews: 389, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 323 324', desc: 'Доставка с распиской, фото перед доставкой.' },
+  { name: 'Марат Аманов', emoji: '', rating: 4.9, reviews: 398, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 424 425', desc: 'Опыт 15 лет. Знает все улицы Бишкека и области.' },
+  { name: 'Назар Муратов', emoji: '', rating: 4.8, reviews: 356, category: 'delivery', skill: 'Курьер', city: 'Нарын', phone: '+996 771 525 526', desc: 'Эконом доставка и премиум сервис на выбор.' },
+  { name: 'Оксимбай Нарсов', emoji: '', rating: 4.9, reviews: 410, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 626 627', desc: 'Доставка по Чуйской области, Талассе, Кара-Балте.' },
+  { name: 'Павел Орлов', emoji: '', rating: 4.7, reviews: 267, category: 'delivery', skill: 'Курьер', city: 'Ош', phone: '+996 771 727 728', desc: 'Квадроцикл для доставок в сельские районы.' },
+  { name: 'Рахим Абдулин', emoji: '', rating: 4.8, reviews: 378, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 828 829', desc: 'Доставка с упаковкой, пенопласт, упаковочный материал.' },
+  { name: 'Сакен Алиев', emoji: '', rating: 4.9, reviews: 425, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 929 930', desc: 'Профессиональная служба доставки. Рейтинг 4.9 из 1000+ заказов.' },
+  { name: 'Талай Жангалиев', emoji: '', rating: 4.8, reviews: 345, category: 'delivery', skill: 'Курьер', city: 'Нарын', phone: '+996 771 030 031', desc: 'Доставка в сложные районы, коттеджные посёлки.' },
+  { name: 'Усен Мустафаев', emoji: '', rating: 4.9, reviews: 398, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 131 132', desc: 'Микроавтобус для группировок, бизнес-лужов.' },
+  { name: 'Фахри Гусман', emoji: '', rating: 4.8, reviews: 334, category: 'delivery', skill: 'Курьер', city: 'Ош', phone: '+996 771 232 233', desc: 'Доставка продуктов из супермаркетов в день заказа.' },
+  { name: 'Халик Сейдалиев', emoji: '', rating: 4.9, reviews: 407, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 333 334', desc: 'Ночная доставка с 22:00 до 08:00 включительно.' },
+  { name: 'Чинар Сатыбеков', emoji: '', rating: 4.7, reviews: 289, category: 'delivery', skill: 'Курьер', city: 'Нарын', phone: '+996 771 434 435', desc: 'Доставка на личном авто, честная тарификация.' },
+  { name: 'Шамиль Гилязов', emoji: '', rating: 4.8, reviews: 376, category: 'delivery', skill: 'Курьер', city: 'Бишкек', phone: '+996 771 535 536', desc: 'Супер рейтинг, подробное видео при загрузке/разгрузке.' },
+  
+  // УБОРКА (cleaning) - 30+ мастеров
+  { name: 'Гульнара Жапарова', emoji: '', rating: 5.0, reviews: 289, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 919 920', desc: 'После ремонта и текущая уборка. Супер профессионал.' },
+  { name: 'Жаркынай Сатыбалдиева', emoji: '', rating: 4.9, reviews: 245, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 818 819', desc: 'Генеральная уборка квартир и офисов. 10+ лет опыта.' },
+  { name: 'Айнура Сабирова', emoji: '', rating: 4.9, reviews: 301, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 121 122', desc: 'Профессиональная уборка офисов. Гарантия чистоты.' },
+  { name: 'Нургуль Абасова', emoji: '', rating: 4.8, reviews: 267, category: 'cleaning', skill: 'Клининг', city: 'Ош', phone: '+996 772 020 021', desc: 'Чистка окон, люстр, зеркал, люстр. Аккуратная работа.' },
+  { name: 'Мария Петрова', emoji: '', rating: 4.8, reviews: 298, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 424 425', desc: 'Генеральная и ежедневная уборка офисов и квартир.' },
+  { name: 'Асель Акбулакова', emoji: '', rating: 4.9, reviews: 278, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 525 526', desc: 'Уборка ресторанов, кафе, магазинов. Высокие стандарты.' },
+  { name: 'Бармаш Каримова', emoji: '', rating: 4.8, reviews: 234, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 626 627', desc: 'Влажная уборка, дезинфекция, озонирование квартир.' },
+  { name: 'Венера Сакова', emoji: '', rating: 4.9, reviews: 312, category: 'cleaning', skill: 'Клининг', city: 'Ош', phone: '+996 772 727 728', desc: 'Уборка после строительства, ремонта. Вывоз мусора.' },
+  { name: 'Галина Кочнева', emoji: '', rating: 4.8, reviews: 289, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 828 829', desc: 'Чистка паркета, ламината, мраморных полов.' },
+  { name: 'Дарина Гасымова', emoji: '', rating: 4.9, reviews: 301, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 929 930', desc: 'Отпаривание мебели, очистка кожаных диванов.' },
+  { name: 'Елена Соколова', emoji: '', rating: 4.8, reviews: 276, category: 'cleaning', skill: 'Клининг', city: 'Нарын', phone: '+996 772 030 031', desc: 'Уборка балконов, лоджий, витрин, фасадов.' },
+  { name: 'Жанна Журавлева', emoji: '', rating: 4.9, reviews: 298, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 131 132', desc: 'Уборка ванных комнат, санузлов, нержавеющей стали.' },
+  { name: 'Зульфия Абдулина', emoji: '', rating: 4.8, reviews: 267, category: 'cleaning', skill: 'Клининг', city: 'Ош', phone: '+996 772 232 233', desc: 'Полировка мебели, гараж, подвалы, чердаки.' },
+  { name: 'Ирина Петерсон', emoji: '', rating: 4.9, reviews: 310, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 333 334', desc: 'Сервис для домохозяек - еженедельная уборка дома.' },
+  { name: 'Карина Малахова', emoji: '', rating: 4.8, reviews: 289, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 434 435', desc: 'Уборка квартир после переезда, смена мебели.' },
+  { name: 'Ленара Сейтова', emoji: '', rating: 4.9, reviews: 323, category: 'cleaning', skill: 'Клининг', city: 'Нарын', phone: '+996 772 535 536', desc: 'Экологичная химия, безопасно для аллергиков и детей.' },
+  { name: 'Малика Есимова', emoji: '', rating: 4.8, reviews: 245, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 636 637', desc: 'Химчистка тканевой мебели, ковров, ковролина.' },
+  { name: 'Наталья Гавриленко', emoji: '', rating: 4.9, reviews: 308, category: 'cleaning', skill: 'Клининг', city: 'Ош', phone: '+996 772 737 738', desc: 'Уборка офисных помещений по корпоративным стандартам.' },
+  { name: 'Оксана Сычева', emoji: '', rating: 4.8, reviews: 267, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 838 839', desc: 'Санитайная обработка, дезинсекция, дератизация.' },
+  { name: 'Розалия Мусина', emoji: '', rating: 4.9, reviews: 295, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 939 940', desc: 'Уборка производственных площадей, цехов, складов.' },
+  { name: 'Сауле Нурова', emoji: '', rating: 4.8, reviews: 278, category: 'cleaning', skill: 'Клининг', city: 'Нарын', phone: '+996 772 040 041', desc: 'Влажное воскомасло, восковое покрытие полов.' },
+  { name: 'Татьяна Волкова', emoji: '', rating: 4.9, reviews: 301, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 141 142', desc: 'Очистка от плесени, грибка, избавление от запахов.' },
+  { name: 'Укай Баярыр', emoji: '', rating: 4.8, reviews: 256, category: 'cleaning', skill: 'Клининг', city: 'Ош', phone: '+996 772 242 243', desc: 'Услуга синго - ежедневная лёгкая уборка (30 минут).' },
+  { name: 'Фатима Азизова', emoji: '', rating: 4.9, reviews: 312, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 343 344', desc: 'Уборка загородных домов, коттеджей, вилл.' },
+  { name: 'Халима Сабирова', emoji: '', rating: 4.8, reviews: 289, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 444 445', desc: 'Мытьё окон, витрин, фасадов промышленным альпинизмом.' },
+  { name: 'Чулпан Вагапова', emoji: '', rating: 4.9, reviews: 298, category: 'cleaning', skill: 'Клининг', city: 'Нарын', phone: '+996 772 545 546', desc: 'Сервис для офисов - еженедельное обслуживание.' },
+  { name: 'Шакира Касимова', emoji: '', rating: 4.8, reviews: 267, category: 'cleaning', skill: 'Клининг', city: 'Ош', phone: '+996 772 646 647', desc: 'Уборка после праздников, вечеринок, свадеб.' },
+  { name: 'Юлия Тарасова', emoji: '', rating: 4.9, reviews: 315, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 747 748', desc: 'Система контроля качества - проверка по чек-листу.' },
+  { name: 'Ячера Турсунова', emoji: '', rating: 4.8, reviews: 276, category: 'cleaning', skill: 'Клининг', city: 'Бишкек', phone: '+996 772 848 849', desc: 'Премиум уборка с использованием парогенератора.' },
+];
+
+const reviews = [
+  { name: 'Алия К.', text: 'Нашла сантехника за 10 минут! Пришёл вовремя, сделал всё качественно. Спасибо UstaTap! ', rating: 5 },
+  { name: 'Максат Б.', text: 'Курьер доставил за 25 минут. Очень удобный сервис, буду пользоваться дальше.', rating: 5 },
+  { name: 'Динара С.', text: 'Заказала уборку квартиры. Результат — просто супер! Рекомендую всем ', rating: 5 },
+];
+
+// RENDER
+function renderCategories() {
+  const grid = document.getElementById('categories-grid');
+  grid.innerHTML = categories.map((c, i) => `
+    <div class="bg-gradient-to-br ${c.color} border ${c.border} rounded-2xl p-5 card-hover cursor-pointer anim-fade delay-${i+1}" onclick="openCategoryView('${c.name}')">
+      <div class="w-10 h-10 mb-3 text-slate-300"><i data-lucide="${c.icon}" style="width:32px;height:32px;"></i></div>
+      <div class="font-bold text-sm mb-1">${c.name}</div>
+      <div class="text-slate-500 text-xs">${c.count} мастеров</div>
+    </div>
+  `).join('');
+  lucide.createIcons();
+}
+
+function renderMasters(filter = 'all') {
+  const grid = document.getElementById('masters-grid');
+  
+  let filtered;
+  if (filter === 'all') {
+    // На главной показываем ТОП 3
+    filtered = masters.filter(m => m.isTop).slice(0, 3);
+  } else {
+    // В модальном окне показываем ВСЕ мастеров категории (30-40)
+    filtered = masters.filter(m => m.category === filter);
+  }
+  
+  grid.innerHTML = filtered.map((m, i) => `
+    <div class="master-card bg-slate-800/60 border border-slate-700/50 rounded-2xl p-6 cursor-pointer anim-fade delay-${(i%8)+1}" onclick='openMasterProfile(${JSON.stringify(m).replace(/'/g,"&#39;")})'>
+      <div class="flex items-center gap-4 mb-4">
+        <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-orange-500/20 to-slate-700 flex items-center justify-center text-slate-400"><i data-lucide="user" style="width:24px;height:24px;"></i></div>
+        <div class="flex-1">
+          <div class="font-bold">${m.name}</div>
+          <div class="text-orange-400 text-sm font-semibold">${m.skill}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-4 text-xs text-slate-400 mb-3">
+        <span> ${m.rating}</span><span>${m.reviews} отзывов</span><span>📍 ${m.city}</span>
+      </div>
+      <p class="text-slate-500 text-xs mb-4 leading-relaxed">${m.desc}</p>
+      <button class="w-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold px-4 py-2 rounded-lg hover:bg-orange-500 hover:text-white transition-all">Связаться</button>
+    </div>
+  `).join('');
+  setTimeout(() => lucide.createIcons(), 50);
+}
+
+function renderReviews() {
+  const grid = document.getElementById('reviews-grid');
+  grid.innerHTML = reviews.map((r, i) => `
+    <div class="bg-slate-800/50 border border-slate-700/50 rounded-2xl p-6 card-hover anim-fade delay-${i+1}">
+      <div class="flex items-center gap-1 mb-3">${''.repeat(r.rating)}</div>
+      <p class="text-slate-300 text-sm leading-relaxed mb-4">"${r.text}"</p>
+      <div class="font-bold text-sm text-slate-400">— ${r.name}</div>
+    </div>
+  `).join('');
+}
+
+// INTERACTIONS
+function filterMasters(filter) {
+  document.querySelectorAll('[data-filter]').forEach(btn => {
+    if (btn.dataset.filter === filter) {
+      btn.className = 'category-pill active bg-orange-500 text-white text-xs font-bold px-4 py-2 rounded-full';
+    } else {
+      btn.className = 'category-pill bg-slate-800 text-slate-300 text-xs font-bold px-4 py-2 rounded-full border border-slate-700';
+    }
+  });
+  renderMasters(filter);
+}
+
+function handleSearch(query) {
+  if (query) {
+    document.getElementById('search-input').value = query;
+  }
+  scrollToSection('masters');
+}
+
+function openModal() {
+  document.getElementById('order-modal').classList.remove('hidden');
+  document.getElementById('order-form').classList.remove('hidden');
+  document.getElementById('order-success').classList.add('hidden');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal() {
+  document.getElementById('order-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function submitOrder(e) {
+  e.preventDefault();
+  document.getElementById('order-form').classList.add('hidden');
+  document.getElementById('order-success').classList.remove('hidden');
+}
+
+function openMasterProfile(m) {
+  const modal = document.getElementById('master-modal');
+  const content = document.getElementById('master-modal-content');
+  content.innerHTML = `
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="font-display font-bold text-xl">Профиль мастера</h3>
+      <button onclick="closeMasterModal()" class="text-slate-400 hover:text-white p-1"><i data-lucide="x" style="width:22px;height:22px;"></i></button>
+    </div>
+    <div class="text-center mb-6">
+      <div class="w-20 h-20 rounded-2xl bg-gradient-to-br from-orange-500/30 to-slate-700 flex items-center justify-center text-slate-400 mx-auto mb-3"><i data-lucide="user" style="width:40px;height:40px;"></i></div>
+      <div class="font-display font-bold text-xl">${m.name}</div>
+      <div class="text-orange-400 font-semibold">${m.skill}</div>
+      <div class="flex items-center justify-center gap-3 mt-2 text-sm text-slate-400">
+        <span> ${m.rating}</span><span>•</span><span>${m.reviews} отзывов</span><span>•</span><span> ${m.city}</span>
+      </div>
+    </div>
+      <div class="bg-slate-800 rounded-xl p-4 mb-6">
+      <div class="text-xs text-slate-500 mb-2 font-semibold">Номер телефона</div>
+      <div class="flex items-center gap-2 text-sm text-slate-300 mb-3">
+        <i data-lucide="phone" style="width:16px;height:16px;" class="text-orange-400"></i>
+        <span>${m.phone}</span>
+      </div>
+      <button onclick="copyPhone('${m.phone}')" class="bg-orange-500/10 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-orange-500 hover:text-white transition-all">Скопировать</button>
+    </div>
+    <div class="bg-slate-800 rounded-xl p-4 mb-6">
+      <div class="text-xs text-slate-500 mb-1 font-semibold">О себе</div>
+      <div class="text-sm text-slate-300">${m.desc}</div>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeMasterModal()" class="flex-1 bg-slate-800 border border-slate-700 text-slate-300 font-bold px-5 py-3 rounded-xl text-sm hover:border-orange-500/30 transition-colors">Закрыть</button>
+    </div>
+  `;
+  modal.classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  lucide.createIcons();
+}
+function closeMasterModal() {
+  document.getElementById('master-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function copyPhone(phone) {
+  navigator.clipboard.writeText(phone).then(() => {
+    alert('Номер скопирован в буфер обмена!');
+  });
+}
+
+function openCategoryView(categoryName) {
+  const categoryMap = {
+    'Сантехник': 'repair',
+    'Электрик': 'repair',
+    'Ремонт': 'repair',
+    'Программист': 'it',
+    'Дизайнер': 'it',
+    'Курьер': 'delivery',
+    'Уборка': 'cleaning',
+    'Репетитор': 'it'
+  };
+  
+  const categoryType = categoryMap[categoryName];
+  const categoryMasters = masters.filter(m => m.category === categoryType);
+  
+  document.getElementById('category-title').textContent = categoryName;
+  const grid = document.getElementById('category-masters-grid');
+  
+  grid.innerHTML = categoryMasters.map(m => `
+    <div class="bg-slate-800/60 border border-slate-700/50 rounded-xl p-4 cursor-pointer hover:border-orange-500/30 transition-all" onclick='openMasterProfile(${JSON.stringify(m).replace(/'/g,"&#39;")})'>
+      <div class="flex items-center gap-3 mb-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-500/20 to-slate-700 flex items-center justify-center text-slate-400"><i data-lucide="user" style="width:20px;height:20px;"></i></div>
+        <div class="flex-1">
+          <div class="font-bold text-sm">${m.name}</div>
+          <div class="text-orange-400 text-xs font-semibold">${m.skill}</div>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-slate-400 mb-2">
+        <span> ${m.rating}</span><span>•</span><span>${m.reviews}</span>
+      </div>
+      <p class="text-slate-500 text-xs leading-relaxed mb-3">${m.desc}</p>
+      <button class="w-full bg-orange-500/10 border border-orange-500/20 text-orange-400 text-xs font-bold px-3 py-1.5 rounded-lg hover:bg-orange-500 hover:text-white transition-all">Подробнее</button>
+    </div>
+  `).join('');
+  
+  document.getElementById('category-modal').classList.remove('hidden');
+  document.body.style.overflow = 'hidden';
+  lucide.createIcons();
+}
+
+function closeCategoryModal() {
+  document.getElementById('category-modal').classList.add('hidden');
+  document.body.style.overflow = '';
+}
+
+function submitService(e) {
+  e.preventDefault();
+  document.getElementById('add-service-form').classList.add('hidden');
+  document.getElementById('service-success').classList.remove('hidden');
+}
+
+function resetServiceForm() {
+  document.getElementById('add-service-form').classList.remove('hidden');
+  document.getElementById('service-success').classList.add('hidden');
+  document.getElementById('add-service-form').reset();
+}
+
+function toggleMobileMenu() {
+  document.getElementById('mobile-menu').classList.toggle('hidden');
+}
+function closeMobileMenu() {
+  document.getElementById('mobile-menu').classList.add('hidden');
+}
+
+function scrollToSection(sectionId) {
+  const element = document.getElementById(sectionId);
+  if (element) {
+    const appEl = document.getElementById('app');
+    const elementRect = element.getBoundingClientRect();
+    const appRect = appEl.getBoundingClientRect();
+    const scrollTop = appEl.scrollTop + (elementRect.top - appRect.top);
+    appEl.scrollTo({ top: scrollTop, behavior: 'smooth' });
+  }
+}
+
+// Navbar scroll effect
+const appEl = document.getElementById('app');
+appEl.addEventListener('scroll', () => {
+  const nav = document.getElementById('navbar');
+  if (appEl.scrollTop > 50) {
+    nav.style.background = 'rgba(15,23,42,0.95)';
+    nav.style.backdropFilter = 'blur(12px)';
+    nav.style.borderBottom = '1px solid rgba(51,65,85,0.5)';
+  } else {
+    nav.style.background = 'transparent';
+    nav.style.backdropFilter = 'none';
+    nav.style.borderBottom = 'none';
+  }
+});
+
+// Intersection Observer for scroll animations
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.style.opacity = '1';
+    }
+  });
+}, { threshold: 0.1 });
+
+// INIT
+renderCategories();
+renderMasters();
+renderReviews();
+lucide.createIcons();
+
+// SDK
+const defaultConfig = {
+  hero_title: 'Найди <span class="gradient-text">мастера</span><br>за минуту',
+  hero_subtitle: 'Лучшие специалисты Кыргызстана — сантехники, электрики, курьеры, программисты и другие профессионалы рядом с вами',
+  contact_phone: '+996 555 123 456',
+  contact_email: 'info@ustatap.kg',
+  background_color: '#0f172a',
+  surface_color: '#1e293b',
+  text_color: '#e2e8f0',
+  primary_action_color: '#FF6B35',
+  secondary_action_color: '#38bdf8',
+  font_family: 'Nunito Sans',
+  font_size: 16,
+};
+
+function applyConfig(config) {
+  const t = (k) => config[k] || defaultConfig[k];
+  
+  document.getElementById('hero-title').innerHTML = t('hero_title');
+  document.getElementById('hero-subtitle').textContent = t('hero_subtitle');
+  document.getElementById('contact-phone').textContent = t('contact_phone');
+  document.getElementById('contact-email').textContent = t('contact_email');
+
+  const bg = t('background_color');
+  const surface = t('surface_color');
+  const text = t('text_color');
+  const primary = t('primary_action_color');
+  const secondary = t('secondary_action_color');
+  const font = t('font_family');
+  const size = t('font_size');
+
+  document.body.style.fontFamily = `${font}, Nunito Sans, sans-serif`;
+  document.querySelectorAll('.font-display').forEach(el => {
+    el.style.fontFamily = `Unbounded, ${font}, sans-serif`;
+  });
+
+  // Apply base font size scaling
+  document.getElementById('hero-title').style.fontSize = `${size * 3}px`;
+  document.getElementById('hero-subtitle').style.fontSize = `${size * 1.15}px`;
+}
+
+if (window.elementSdk) {
+  window.elementSdk.init({
+    defaultConfig,
+    onConfigChange: async (config) => applyConfig(config),
+    mapToCapabilities: (config) => {
+      const c = (key) => ({
+        get: () => config[key] || defaultConfig[key],
+        set: (v) => { config[key] = v; window.elementSdk.setConfig({ [key]: v }); }
+      });
+      return {
+        recolorables: [c('background_color'), c('surface_color'), c('text_color'), c('primary_action_color'), c('secondary_action_color')],
+        borderables: [],
+        fontEditable: c('font_family'),
+        fontSizeable: {
+          get: () => config.font_size || defaultConfig.font_size,
+          set: (v) => { config.font_size = v; window.elementSdk.setConfig({ font_size: v }); }
+        },
+      };
+    },
+    mapToEditPanelValues: (config) => new Map([
+      ['hero_title', config.hero_title || defaultConfig.hero_title],
+      ['hero_subtitle', config.hero_subtitle || defaultConfig.hero_subtitle],
+    ]),
+  });
+}
+
+applyConfig(defaultConfig);
+</script>
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9ec4b3dca5844637',t:'MTc3NjE5MDU5Ny4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
